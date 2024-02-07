@@ -14,6 +14,7 @@ class Game{
         int seqAmount;
         vector<vector<string>> board;
         vector<string> seq;
+        vector<int> seqLen;
         vector<int> prize;
 
     Game() : bufferSize(0), width(0), height(0), seqAmount(0) {}
@@ -49,6 +50,44 @@ class Game{
             cout << endl;
         }    
 
+        vector<string> generatePaths(){
+            if(bufferSize < 0){
+                return {};
+            }
+            
+            vector<string> paths;
+                
+            return paths;
+        }
+
+        int pathToPoints(string path){
+            int points = 0;
+            int pathLen = path.size();
+            bool seqUsed[seqAmount] {false};
+
+            int i = 0;
+            while(i < pathLen){
+                for(int j = 0; j < seqAmount; j++){
+                    if(path[i] == seq[j][0] && !seqUsed[j] && pathLen-i+1 >= seqLen[j]){
+                        int k = 1;
+                        for(; k < seqLen[j]; k++){
+                            if(path[i+k] != seq[j][k]){
+                                break;
+                            }
+                        }
+
+                        if(k == seqLen[j]){
+                            points += prize[j];
+                            seqUsed[j] = true;
+                        }
+                    }
+                }
+                
+                i++;
+            }
+
+            return points;
+        }
 }; 
 
 int readFile(Game& game) {
@@ -134,6 +173,7 @@ int readFile(Game& game) {
                     }
                     game.prize.push_back(reward);
                 }
+
             } else {
                 cerr << "Error: Unexpected line content on line " << lineNumber << endl;
                 return -1;
@@ -146,6 +186,11 @@ int readFile(Game& game) {
     } else {
         cerr << "Error opening file!" << endl;
         return -1;
+    }
+
+    // Get sequnce string len
+    for(int i = 0; i < game.seqAmount; i++){
+        game.seqLen.push_back(game.seq[i].size());
     }
 
     return 0;
@@ -166,10 +211,11 @@ int main(){
             if(readFile(game) == -1){
                 cout << "File read failed. Wrong file format\n" << endl;
             } else{
+                game.printGameVar();
                 
             }
         } else if (inputMethod == "2"){
-            // TODO
+            cout << game.pathToPoints("BDE91CBD7ABD1CBD7ABD") << endl;
             break;
         } else{
             cout << "Invalid input. Please input the number.\n" << endl;
@@ -178,7 +224,7 @@ int main(){
 
 
 
-    game.printGameVar();
+    // game.printGameVar();
 
 
     return 0;

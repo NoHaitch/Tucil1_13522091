@@ -12,8 +12,10 @@ class Game{
         int width;
         int height;
         int seqAmount;
-        vector<vector<string>> board;
+        int maxPointsPossible;
+        vector<vector<string>> matrix;
         vector<string> seq;
+        vector<string> paths;
         vector<int> seqLen;
         vector<int> prize;
 
@@ -27,11 +29,11 @@ class Game{
             cout << "- height: " << height << endl;
             cout << "- seqAmount: " << seqAmount << endl;
 
-            // Print boards
-            cout << "- board:" << endl;
+            // Print matrixs
+            cout << "- matrix:" << endl;
             for (int i = 0; i < height; ++i) {
                 for (int j = 0; j < width; ++j) {
-                    cout << board[i][j] << " ";
+                    cout << matrix[i][j] << " ";
                 }
                 cout << endl;
             }
@@ -50,16 +52,89 @@ class Game{
             cout << endl;
         }    
 
-        vector<string> generatePaths(){
-            if(bufferSize < 0){
-                return {};
+        void solveGame(int *resPoint, string *resPath){
+            int maxPoints = 0;
+            string maxPath;
+
+            generatePaths();
+
+            if(paths.empty()){
+                return;
             }
             
-            vector<string> paths;
-                
-            return paths;
+            for(string path: paths){
+                int point = pathToPoints(path);
+                if(point >= maxPoints && point != 0){
+                    cout << path << " : " << point << endl;
+                    string cleandePath = cleanNonUsedBuffer(path);
+                    if(cleandePath.size() < maxPath.size() || maxPath.empty()){
+                        maxPoints = point;
+                        maxPath = cleandePath;
+                    }
+                }
+            }
+
+            *resPoint = maxPoints;
+            *resPath = maxPath;
         }
 
+    private:
+        void generatePaths(){
+            if(paths.empty()){
+                genPaths(0, 0, "", {});
+            }
+        }
+    
+        void genPaths(int currBuffer, int lastSignificantIndex, string currPath, vector<vector<int>> seenPath){
+            if(currBuffer == bufferSize){
+                paths.push_back(currPath);
+                return;
+            }
+
+            if(currBuffer == 0){
+                // first move
+                for(int x = 0; x < width; x++){
+                    genPaths(1, x, matrix[0][x], {{x,0}});
+                }
+
+            } else if(currBuffer % 2 == 1){
+                // move vertical
+                for(int y = 0; y < height; y++){
+                    bool seen = false;
+                    for(auto& coordinats : seenPath){
+                        if(coordinats[0] == lastSignificantIndex && coordinats[1] == y){
+                            seen = true;
+                            break;
+                        }
+                    }
+                    if(seen){
+                        continue;
+                    }
+                    seenPath.push_back({lastSignificantIndex, y});
+                    genPaths(currBuffer + 1, y, currPath + matrix[y][lastSignificantIndex], seenPath);
+                    seenPath.pop_back();
+                }
+
+            } else{
+                // move horizontal
+                for(int x = 0; x < height; x++){
+                    bool seen = false;
+                    for(auto& coordinats : seenPath){
+                        if(coordinats[0] == x && coordinats[1] == lastSignificantIndex){
+                            seen = true;
+                            break;
+                        }
+                    }
+                    if(seen){
+                        continue;
+                    }
+                    seenPath.push_back({x, lastSignificantIndex});
+                    genPaths(currBuffer + 1, x, currPath + matrix[lastSignificantIndex][x], seenPath);
+                    seenPath.pop_back();
+                }
+            }
+        }
+    
         int pathToPoints(string path){
             int points = 0;
             int pathLen = path.size();
@@ -87,6 +162,35 @@ class Game{
             }
 
             return points;
+        }
+
+        string cleanNonUsedBuffer(string path){
+            int lastIdx = 0;
+            int points = 0;
+            int pathLen = path.size();
+            bool seqUsed[seqAmount] {false};
+            int i = 0;
+            while(i < pathLen){
+                for(int j = 0; j < seqAmount; j++){
+                    if(path[i] == seq[j][0] && !seqUsed[j] && pathLen-i+1 >= seqLen[j]){
+                        int k = 1;
+                        for(; k < seqLen[j]; k++){
+                            if(path[i+k] != seq[j][k]){
+                                break;
+                            }
+                        }
+
+                        if(k == seqLen[j]){
+                            lastIdx = i+k;
+                            seqUsed[j] = true;
+                        }
+                    }
+                }
+                
+                i++;
+            }
+
+            return path.erase(lastIdx,path.size()-1);
         }
 }; 
 
@@ -129,8 +233,8 @@ int readFile(Game& game) {
                     cerr << "Error parsing matrix dimensions on line " << lineNumber << endl;
                     return -1;
                 }
-                // Resize board vector based on parsed dimensions
-                game.board.resize(game.height, vector<string>(game.width));
+                // Resize matrix vector based on parsed dimensions
+                game.matrix.resize(game.height, vector<string>(game.width));
             }
 
             // Parse matrix elements
@@ -138,7 +242,7 @@ int readFile(Game& game) {
                 int row = lineNumber - 3;
                 int col = 0;
                 while (ss >> token) {
-                    game.board[row][col++] = token;
+                    game.matrix[row][col++] = token;
                 }
                 if (col != game.width) {
                     cerr << "Error: Incorrect number of elements in row " << row << endl;
@@ -193,6 +297,12 @@ int readFile(Game& game) {
         game.seqLen.push_back(game.seq[i].size());
     }
 
+    // Get max points possible
+    game.maxPointsPossible = 0;
+    for(int i = 0; i < game.seqAmount; i++){
+        game.maxPointsPossible += game.prize[i];
+    }
+
     return 0;
 
 }
@@ -215,8 +325,13 @@ int main(){
                 
             }
         } else if (inputMethod == "2"){
-            cout << game.pathToPoints("BDE91CBD7ABD1CBD7ABD") << endl;
-            break;
+            int maxPoints;
+            string path;
+            game.solveGame(&maxPoints, &path);
+
+            cout << "Points : " << maxPoints << endl;
+            cout << "Path : " << path << endl;
+
         } else{
             cout << "Invalid input. Please input the number.\n" << endl;
         }

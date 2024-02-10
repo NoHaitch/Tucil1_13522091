@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+
 using namespace std;
 
 class Game{
@@ -53,23 +54,29 @@ class Game{
         }    
 
         void solveGame(int *resPoint, string *resPath){
-            int maxPoints = 0;
-            string maxPath;
-
             generatePaths();
 
             if(paths.empty()){
                 return;
             }
+
+            int maxPoints = 0;
+            string maxPath;
             
             for(string path: paths){
                 int point = pathToPoints(path);
+
                 if(point >= maxPoints && point != 0){
-                    cout << path << " : " << point << endl;
-                    string cleandePath = cleanNonUsedBuffer(path);
-                    if(cleandePath.size() < maxPath.size() || maxPath.empty()){
+                    if(maxPoints == 0 || point > maxPoints){
                         maxPoints = point;
-                        maxPath = cleandePath;
+                        maxPath = cleanNonUsedBuffer(path);
+                    } else{
+                        string cleandePath = cleanNonUsedBuffer(path);
+                        
+                        if(cleandePath.size() < maxPath.size()){
+                            maxPoints = point;
+                            maxPath = cleandePath;
+                        }
                     }
                 }
             }
@@ -134,7 +141,7 @@ class Game{
                 }
             }
         }
-    
+    public:
         int pathToPoints(string path){
             int points = 0;
             int pathLen = path.size();
@@ -333,7 +340,12 @@ int main(){
             cout << "Path : " << path << endl;
 
         } else{
-            cout << "Invalid input. Please input the number.\n" << endl;
+            string path;
+            cout << "PATH : ";
+            cin >> path;
+            cout << "res : " << game.pathToPoints(path) << endl;
+            cout << "cleaned : " << game.cleanNonUsedBuffer(path) << endl;
+            // cout << "Invalid input. Please input the number.\n" << endl;
         }
     }
 

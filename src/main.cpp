@@ -3,9 +3,12 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <chrono>
 #include <filesystem>
+#include <algorithm>
 
 using namespace std;
+using namespace std::chrono;
 
 class Game{
     public:
@@ -17,6 +20,7 @@ class Game{
         vector<vector<string>> matrix;
         vector<string> seq;
         vector<string> paths;
+        vector<vector<vector<int>>> matrixPaths;
         vector<int> seqLen;
         vector<int> prize;
 
@@ -24,15 +28,16 @@ class Game{
 
     public:
         void printGameVar(){
-            cout << "=== Game object variables ===" << endl;
-            cout << "- bufferSize: " << bufferSize << endl;
-            cout << "- width: " << width << endl;
-            cout << "- height: " << height << endl;
-            cout << "- seqAmount: " << seqAmount << endl;
+            cout << "\n\033[1;33m========== Game Variables ==========\033[0m" << endl;
+            cout << "> bufferSize: " << bufferSize << endl;
+            cout << "> width: " << width << endl;
+            cout << "> height: " << height << endl;
+            cout << "> seqAmount: " << seqAmount << endl;
 
             // Print matrixs
-            cout << "- matrix:" << endl;
+            cout << "> matrix:" << endl;
             for (int i = 0; i < height; ++i) {
+                cout << "   ";
                 for (int j = 0; j < width; ++j) {
                     cout << matrix[i][j] << " ";
                 }
@@ -40,42 +45,45 @@ class Game{
             }
 
             // Print sequences
-            cout << "- seq:" << endl;
+            cout << "> sequences: " << endl;
             for (int i = 0; i < seqAmount; ++i) {
-                cout << seq[i] << endl;
+                cout <<"   prize: " << prize[i] << ", seq: ";
+                for(int j = 0; j < seq[i].size()-1; j += 2){
+                    cout << seq[i][j] << seq[i][j+1] << " ";
+                } cout << endl;
             }
+        
 
-            // Print prizes
-            cout << "- prize:" << endl;
-            for (int i = 0; i < prize.size(); ++i) {
-                cout << prize[i] << " ";
-            }
             cout << endl;
         }    
 
-        void solveGame(int *resPoint, string *resPath){
+        int solveGame(int *resPoint, string *resPath, vector<vector<int>> *resMatrixPath){
             generatePaths();
 
             if(paths.empty()){
-                return;
+                return -1;
             }
 
             int maxPoints = 0;
             string maxPath;
+            vector<vector<int>> maxMatrixPath;
             
-            for(string path: paths){
+            for(int i = 0; i < paths.size(); i++){
+                string path = paths[i];
                 int point = pathToPoints(path);
 
                 if(point >= maxPoints && point != 0){
                     if(maxPoints == 0 || point > maxPoints){
                         maxPoints = point;
                         maxPath = cleanNonUsedBuffer(path);
+                        maxMatrixPath = cleanedNonUsedMatrixPath(maxPath, matrixPaths[i]);
                     } else{
                         string cleandePath = cleanNonUsedBuffer(path);
                         
                         if(cleandePath.size() < maxPath.size()){
                             maxPoints = point;
                             maxPath = cleandePath;
+                            maxMatrixPath = cleanedNonUsedMatrixPath(maxPath, matrixPaths[i]);
                         }
                     }
                 }
@@ -83,9 +91,80 @@ class Game{
 
             *resPoint = maxPoints;
             *resPath = maxPath;
+            *resMatrixPath = maxMatrixPath;
+            return 0;
+        }
+
+        void solveGameIO(){
+            auto start = high_resolution_clock::now();
+
+            int resPoint;
+            string resPath;
+            vector<vector<int>> resMatrixPath;
+            if(solveGame(&resPoint, &resPath, &resMatrixPath) == -1){
+                cout << "Solving failed" << endl;
+                return;
+            } 
+
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            // duration is in microsecond
+
+            cout << "\n\033[1;33m========== RESULT ==========\033[0m" << endl;
+            cout << "Max Points: " << resPoint << endl;
+            cout << "Buffer : ";
+            for(int i = 0; i < resPath.size()-1; i += 2){
+                cout << resPath[i] << resPath[i+1] << " ";
+            } cout << endl;
+
+            cout << "paths : " << endl;
+            for(auto& coordinats: resMatrixPath){
+                cout << "" << (coordinats[0] + 1) << ", "<< (coordinats[1] + 1) << endl;
+            } cout << endl;
+
+            cout << "Time taken: " << int(duration.count()/1000) << " ms\n" << endl;
+
+            while(1){
+                string input;
+                cout << "Save solution ?[y/n]\033[1;32m" << endl;
+                cin >> input;
+                cout << "\033[0m";
+                if(input == "y" || input == "Y" || input == "yes" || input == "Yes"){
+                    std::stringstream outputStream;
+                    std::streambuf* originalCoutBuffer = std::cout.rdbuf(); 
+                    std::cout.rdbuf(outputStream.rdbuf());
+
+                    cout << resPoint << endl;
+                    for(int i = 0; i < resPath.size()-1; i += 2){
+                        cout << resPath[i] << resPath[i+1] << " ";
+                    } cout << endl;
+
+                    for(auto& coordinats: resMatrixPath){
+                        cout << "" << (coordinats[0] + 1) << ", "<< (coordinats[1] + 1) << endl;
+                    } cout << endl;
+
+                    cout << int(duration.count()/1000) << " ms\n" << endl;
+
+                    std::cout.rdbuf(originalCoutBuffer); 
+
+                    saveOutput(outputStream.str());
+                    break;
+                }
+            }
         }
 
     private:
+        void saveOutput(string outputStream) {
+            string baseFilename = "output";
+            string filename = "../test/" + baseFilename + ".txt";
+
+            std::ofstream file(filename);
+            file << outputStream;
+            file.close();
+
+            std::cout << "Solution saved to " << filename << std::endl;
+        }
+
         void generatePaths(){
             if(paths.empty()){
                 genPaths(0, 0, "", {});
@@ -95,6 +174,7 @@ class Game{
         void genPaths(int currBuffer, int lastSignificantIndex, string currPath, vector<vector<int>> seenPath){
             if(currBuffer == bufferSize){
                 paths.push_back(currPath);
+                matrixPaths.push_back(seenPath);
                 return;
             }
 
@@ -141,7 +221,7 @@ class Game{
                 }
             }
         }
-    public:
+
         int pathToPoints(string path){
             int points = 0;
             int pathLen = path.size();
@@ -198,6 +278,13 @@ class Game{
             }
 
             return path.erase(lastIdx,path.size()-1);
+        }
+
+        vector<vector<int>> cleanedNonUsedMatrixPath(string cleanedBuffer, vector<vector<int>> matrixPath){
+            while(matrixPath.size()*2 > cleanedBuffer.size()){
+                matrixPath.pop_back();
+            }
+            return matrixPath;
         }
 }; 
 
@@ -315,12 +402,12 @@ int readFile(Game& game) {
 }
 
 int main(){
-    Game game;
-    cout << "\n====== Welcome to Breach Protocol ======" << endl;
-    cout << "Pick your method of input:\n1. Text File\n2. CLI" << endl;
-    
-    string inputMethod;
     while(1){
+        string inputMethod;
+        Game game;
+
+        cout << "\n====== Welcome to Breach Protocol Solver ======" << endl;
+        cout << "Pick your method of input:\n1. Text File\n2. CLI\n3. Exit" << endl;
         cout << "\033[1;32m>>> \033[0m";
         cin >> inputMethod;
 
@@ -329,30 +416,17 @@ int main(){
                 cout << "File read failed. Wrong file format\n" << endl;
             } else{
                 game.printGameVar();
-                
+                game.solveGameIO();
             }
         } else if (inputMethod == "2"){
-            int maxPoints;
-            string path;
-            game.solveGame(&maxPoints, &path);
-
-            cout << "Points : " << maxPoints << endl;
-            cout << "Path : " << path << endl;
-
+            
+        } else if (inputMethod == "3"){
+            break;
         } else{
-            string path;
-            cout << "PATH : ";
-            cin >> path;
-            cout << "res : " << game.pathToPoints(path) << endl;
-            cout << "cleaned : " << game.cleanNonUsedBuffer(path) << endl;
-            // cout << "Invalid input. Please input the number.\n" << endl;
+            cout << "Invalid input. Please input the number.\n" << endl;
         }
     }
 
-
-
-    // game.printGameVar();
-
-
+    cout << "Program exited" << endl;
     return 0;
 }

@@ -64,7 +64,7 @@ class Game{
             generatePaths();
 
             if(paths.empty()){
-                return -1;
+                return 0;
             }
 
             int maxPoints = 0;
@@ -466,7 +466,7 @@ class Game{
         }
 }; 
 
-int readFile(Game& game) {
+bool readFile(Game& game) {
     string fileName;
 
     while (true) {
@@ -493,19 +493,45 @@ int readFile(Game& game) {
 
             // Parse buffer_size
             if (lineNumber == 1) {
-                if (!(ss >> token) || !(stringstream(token) >> game.bufferSize)) {
-                    cerr << "Error parsing buffer_size on line " << lineNumber << endl;
-                    return -1;
+                int bSize;
+
+                if (!(ss >> bSize)) {
+                    cerr << "Error parsing buffer size on line " << lineNumber << endl;
+                    return 0;
                 }
+
+                char remainingChar;
+                if (ss >> remainingChar) {
+                    cerr << "Error parsing buffer size on line " << lineNumber << endl;
+                    return 0;
+                }
+
+                if(bSize < 0){
+                    cerr << "Error buffer size must be non-negatif" << endl;
+                    return 0;
+                }
+
+                game.bufferSize = bSize;
             }
 
             // Parse matrix_width and matrix_height
             else if (lineNumber == 2) {
                 if (!(ss >> game.width >> game.height)) {
                     cerr << "Error parsing matrix dimensions on line " << lineNumber << endl;
-                    return -1;
+                    return 0;
                 }
-                // Resize matrix vector based on parsed dimensions
+                
+                char remainingChar;
+                if (ss >> remainingChar) {
+                    cerr << "Error parsing matrix dimensions on line " << lineNumber << endl;
+                    return 0;
+                }
+
+                if(game.width <= 0 || game.height <= 0){
+                    cerr << "Error matrix size must be a positif number" << endl;
+                    return 0;
+                }
+
                 game.matrix.resize(game.height, vector<string>(game.width));
             }
 
@@ -514,19 +540,36 @@ int readFile(Game& game) {
                 int row = lineNumber - 3;
                 int col = 0;
                 while (ss >> token) {
+                    if (col >= game.width) {
+                        cerr << "Error: Incorrect number of elements on line" << lineNumber << endl;
+                        return 0;
+                    }
+
+                    if(token.size() != 2){
+                        cerr << "Error parsing matrix on line " << lineNumber << endl;
+                        return 0;
+                    }
                     game.matrix[row][col++] = token;
                 }
-                if (col != game.width) {
-                    cerr << "Error: Incorrect number of elements in row " << row << endl;
-                    return -1;
-                }
+
             }
 
             // Parse number_of_sequences
             else if (lineNumber == game.height + 3) {
                 if (!(ss >> token) || !(stringstream(token) >> game.seqAmount)) {
-                    cerr << "Error parsing number_of_sequences on line " << lineNumber << endl;
-                    return -1;
+                    cerr << "Error parsing amount of sequance on line " << lineNumber << endl;
+                    return 0;
+                }
+
+                char remainingChar;
+                if (ss >> remainingChar) {
+                    cerr << "Error parsing amount of sequance on line " << lineNumber << endl;
+                    return 0;
+                }
+
+                if(game.seqAmount <= 0){
+                    cerr << "Error amount of sequance must be at least 1" << endl;
+                    return 0;
                 }
             }
 
@@ -538,21 +581,31 @@ int readFile(Game& game) {
                 if (isSequence) {
                     string sequenceStr;
                     while (ss >> token) {
-                        sequenceStr += token; // No space, concatenate tokens directly
+                        if(token.size() != 2){
+                            cerr << "Error parsing sequance on line " << lineNumber << endl;
+                            return 0;
+                        }
+                        sequenceStr += token;
                     }
                     game.seq.push_back(sequenceStr);
                 } else {
                     int reward;
                     if (!(ss >> reward)){
                         cerr << "Error parsing reward for sequence " << seqIndex << endl;
-                        return -1;
+                        return 0;
                     }
                     game.prize.push_back(reward);
+
+                    char remainingChar;
+                    if (ss >> remainingChar) {
+                        cerr << "Error parsing sequance reward on line " << lineNumber << endl;
+                        return 0;
+                    }
                 }
 
             } else {
                 cerr << "Error: Unexpected line content on line " << lineNumber << endl;
-                return -1;
+                return 0;
             }
 
             lineNumber++;
@@ -561,7 +614,7 @@ int readFile(Game& game) {
         MyReadFile.close();
     } else {
         cerr << "Error opening file!" << endl;
-        return -1;
+        return 0; 
     }
 
     // Get sequnce string len
@@ -575,8 +628,106 @@ int readFile(Game& game) {
         game.maxPointsPossible += game.prize[i];
     }
 
-    return 0;
+    return 1;
 
+}
+
+bool readGameFromFile(const std::string& filename, Game& game) {
+    // Check file extension
+    if (filename.substr(filename.find_last_of('.') + 1) != "txt") {
+        cerr << "Error: Only .txt files are supported." << endl;
+        return false;
+    }
+
+    ifstream MyReadFile(filename);
+    if (!MyReadFile.is_open()) {
+        cerr << "Error opening file!" << endl;
+        return false;
+    }
+
+    string line;
+    int lineNumber = 1;
+
+    while (getline(MyReadFile, line)) {
+        stringstream ss(line);
+
+        // Parse buffer_size
+        if (lineNumber == 1) {
+            int bSize;
+            if (!(ss >> bSize)) {
+                cerr << "Error parsing buffer_size on line " << lineNumber << endl;
+                return false;
+            }
+            game.bufferSize = bSize;
+        }
+
+        // Parse matrix_width and matrix_height
+        else if (lineNumber == 2) {
+            int w, h;
+            if (!(ss >> w >> h)) {
+                std::cerr << "Error parsing matrix dimensions on line " << lineNumber << endl;
+                return false;
+            }
+            game.width = w;
+            game.height = h;
+            game.matrix.resize(h, std::vector<std::string>(w));
+        }
+
+        // Parse matrix elements
+        else if (lineNumber <= game.height + 2) {
+            int row = lineNumber - 3;
+            int col = 0;
+            std::string token;
+            while (ss >> token) {
+                if (col >= game.width) {
+                    std::cerr << "Error: Too many elements in row " << row << endl;
+                    return false;
+                }
+                game.matrix[row][col++] = token;
+            }
+            if (col != game.width) {
+                std::cerr << "Error: Missing elements in row " << row << endl;
+                return false;
+            }
+        }
+
+        // Parse number_of_sequences
+        else if (lineNumber == game.height + 3) {
+            int seqNum;
+            if (!(ss >> seqNum)) {
+                std::cerr << "Error parsing number_of_sequences on line " << lineNumber << endl;
+                return false;
+            }
+            game.seqAmount = seqNum;
+        }
+
+        // Parse sequences and rewards
+        else if (lineNumber >= game.height + 4 && lineNumber <= game.height + 4 + 2 * game.seqAmount) {
+            int seqIndex = (lineNumber - game.height - 4) / 2;
+            bool isSequence = (lineNumber - game.height - 4) % 2 == 0;
+
+            if (isSequence) {
+                game.seq.push_back(line); // Store entire sequence string
+            } else {
+                int reward;
+                if (!(ss >> reward)) {
+                    std::cerr << "Error parsing reward for sequence " << seqIndex << endl;
+                    return false;
+                }
+                game.prize.push_back(reward);
+            }
+        }
+
+        else {
+            std::cerr << "Error: Unexpected line content on line " << lineNumber << endl;
+            return false;
+        }
+
+        lineNumber++;
+    }
+
+    MyReadFile.close();
+    return true;
 }
 
 int main(){
@@ -590,8 +741,8 @@ int main(){
         cin >> inputMethod;
 
         if(inputMethod == "1"){
-            if(readFile(game) == -1){
-                cout << "File read failed. Wrong file format\n" << endl;
+            if(!readFile(game)){
+                cout << "File read failed.\n" << endl;
             } else{
                 game.printGameVar();
                 game.solveGameIO();

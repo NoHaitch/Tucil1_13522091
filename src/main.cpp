@@ -1,10 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <vector>
-#include <string>
-#include <chrono>
 #include <filesystem>
+
+#include <string>
+#include <vector>
+#include <unordered_set>
+#include <chrono>
+#include <random>
 #include <algorithm>
 
 using namespace std;
@@ -89,6 +92,11 @@ class Game{
                 }
             }
 
+            if(maxPoints == 0){
+                maxPath = "No Solution";
+                maxMatrixPath = {};
+            }
+
             *resPoint = maxPoints;
             *resPath = maxPath;
             *resMatrixPath = maxMatrixPath;
@@ -113,20 +121,29 @@ class Game{
             cout << "\n\033[1;33m========== RESULT ==========\033[0m" << endl;
             cout << "Max Points: " << resPoint << endl;
             cout << "Buffer : ";
-            for(int i = 0; i < resPath.size()-1; i += 2){
-                cout << resPath[i] << resPath[i+1] << " ";
-            } cout << endl;
+            if(resPath == "No Solution"){
+                cout << resPath << endl;
+            } else{
+                for(int i = 0; i < resPath.size()-1; i += 2){
+                    cout << resPath[i] << resPath[i+1] << " ";
+                } cout << endl;
+            }
 
-            cout << "paths : " << endl;
-            for(auto& coordinats: resMatrixPath){
-                cout << "" << (coordinats[0] + 1) << ", "<< (coordinats[1] + 1) << endl;
-            } cout << endl;
-
+            cout << "paths : ";
+            if(resMatrixPath.empty()){
+                cout << "No Solution" << endl;
+            } else{
+                cout << endl;
+                for(auto& coordinats: resMatrixPath){
+                    cout << "" << (coordinats[0] + 1) << ", "<< (coordinats[1] + 1) << endl;
+                } cout << endl;
+            }
+            
             cout << "Time taken: " << int(duration.count()/1000) << " ms\n" << endl;
 
             while(1){
                 string input;
-                cout << "Save solution ?[y/n]\033[1;32m" << endl;
+                cout << "Save solution ? (y/n): \033[1;32m";
                 cin >> input;
                 cout << "\033[0m";
                 if(input == "y" || input == "Y" || input == "yes" || input == "Yes"){
@@ -135,22 +152,155 @@ class Game{
                     std::cout.rdbuf(outputStream.rdbuf());
 
                     cout << resPoint << endl;
-                    for(int i = 0; i < resPath.size()-1; i += 2){
-                        cout << resPath[i] << resPath[i+1] << " ";
-                    } cout << endl;
+                    if(resPath == "No Solution"){
+                        cout << resPath << endl;
+                    } else{
+                        for(int i = 0; i < resPath.size()-1; i += 2){
+                            cout << resPath[i] << resPath[i+1] << " ";
+                        } cout << endl;
+                    }
 
-                    for(auto& coordinats: resMatrixPath){
-                        cout << "" << (coordinats[0] + 1) << ", "<< (coordinats[1] + 1) << endl;
-                    } cout << endl;
-
-                    cout << int(duration.count()/1000) << " ms\n" << endl;
+                    if(resMatrixPath.empty()){
+                        cout << "No Solution" << endl;
+                    } else{
+                        cout << endl;
+                        for(auto& coordinats: resMatrixPath){
+                            cout << "" << (coordinats[0] + 1) << ", "<< (coordinats[1] + 1) << endl;
+                        } cout << endl;
+                    }
+                    
+                    cout << "Time taken: " << int(duration.count()/1000) << " ms\n" << endl;
 
                     std::cout.rdbuf(originalCoutBuffer); 
 
                     saveOutput(outputStream.str());
                     break;
+                } else if(input == "n" || input == "N" || input == "no" || input == "No"){
+                    break;
                 }
             }
+        }
+
+        void inputIO(){
+            string input;
+            int tokenAmount;
+            int maxSeqSize;
+            vector<string> uniqueToken;
+
+            /* Unique Token Amount */
+            while(1){
+                cout << "\nAmount of Unique Token: \033[1;32m";
+                cin >> input;
+                cout << "\033[0m";
+
+                if (stringstream(input) >> tokenAmount) {
+                    if (tokenAmount > 1) {
+                        break;
+                    } else {
+                        cout << "Invalid input. Token must be a number > 1.\n";
+                    }
+                } else {
+                    cout << "Invalid input. Please enter a number.\n";
+                }
+            }
+
+            /* Unique Token */
+            while(1){
+                cout << "Unique Token: \033[1;32m";
+                for(int i = 0; i < tokenAmount; i++){
+                    string token;
+                    cin >> token;
+                    if(token.size() != 2){
+                        cout << "\033[0mInvalid Input. A token is made of 2 character.\033[1;32m" << endl;
+                    } else{
+                        uniqueToken.push_back(token);
+                    }
+                }
+                cout << "\033[0m";
+
+                unordered_set<string> seen;
+                for(int i = 0; i < tokenAmount; i++){
+                    seen.insert(uniqueToken[i]);
+                }
+
+                if (seen.size() < uniqueToken.size()) {
+                    cout << "Invalid Input. Tokens must all be unique\n";
+                } else {
+                    break;
+                }
+            }
+
+            /* Buffer Size*/
+            while(1){
+                cout << "Buffer Size: \033[1;32m";
+                cin >> input;
+                cout << "\033[0m";
+
+                if (stringstream(input) >> bufferSize) {
+                    if (bufferSize >= 0) {
+                        break;
+                    } else {
+                        cout << "Invalid input. Buffer size must be positif.\n";
+                    }
+                } else {
+                    cout << "Invalid input. Please enter a number.\n";
+                }
+            }
+            
+            /* Matrix Size*/
+            while(1){
+                string input2;
+                cout << "Matrix size: \033[1;32m";
+                cin >> input >> input2;
+                cout << "\033[0m";
+
+                if (stringstream(input) >> width && stringstream(input2) >> height) {
+                    if (width >= 1 && height >= 1) {
+                        break;
+                    } else {
+                        cout << "Invalid input. Matrix Width must be positif.\n";
+                    }
+                } else {
+                    cout << "Invalid input. Please enter a number.\n";
+                }
+            }
+            
+            /* Sequence Amount*/
+            while(1){
+                cout << "Sequence Amount: \033[1;32m";
+                cin >> input;
+                cout << "\033[0m";
+
+                if (stringstream(input) >> seqAmount) {
+                    if (seqAmount >= 1) {
+                        break;
+                    } else {
+                        cout << "Invalid input. Max Sequence Size must be positif.\n";
+                    }
+                } else {
+                    cout << "Invalid input. Please enter a number.\n";
+                }
+            }
+            
+            /* Max Sequence Size*/
+            while(1){
+                cout << "Max Sequence Size: \033[1;32m";
+                cin >> input;
+                cout << "\033[0m";
+
+                if (stringstream(input) >> maxSeqSize) {
+                    if (maxSeqSize >= 1) {
+                        break;
+                    } else {
+                        cout << "Invalid input. Max Sequence Size must be positif.\n";
+                    }
+                } else {
+                    cout << "Invalid input. Please enter a number.\n";
+                }
+            }
+
+            genMatrix(uniqueToken);
+            genSeq(uniqueToken, maxSeqSize);
         }
 
     private:
@@ -222,6 +372,33 @@ class Game{
             }
         }
 
+        void genSeq(vector<string> uniqueToken, int maxSeqSize){
+            for(int i = 0; i < seqAmount; i++){
+                seqLen.push_back((rand() % (maxSeqSize)) + 1);
+                prize.push_back((rand() % (40)) + 10);
+                
+                string temp;
+                for(int j = 0; j < seqLen[i]; j++){
+                    temp += uniqueToken[rand() % uniqueToken.size()];
+                }
+                seq.push_back(temp);
+            }
+
+            for(int i = 0; i < seqAmount; i++){
+                seqLen[i] = seqLen[i]*2;
+            }
+        }
+
+        void genMatrix(vector<string> uniqueToken){
+            for(int i = 0; i < height; i++){
+                vector<string> row;
+                for(int j = 0; j < width; j++){
+                    row.push_back(uniqueToken[rand() % uniqueToken.size()]);
+                }
+                matrix.push_back(row);
+            }
+        }
+
         int pathToPoints(string path){
             int points = 0;
             int pathLen = path.size();
@@ -230,6 +407,7 @@ class Game{
             int i = 0;
             while(i < pathLen){
                 for(int j = 0; j < seqAmount; j++){
+
                     if(path[i] == seq[j][0] && !seqUsed[j] && pathLen-i+1 >= seqLen[j]){
                         int k = 1;
                         for(; k < seqLen[j]; k++){
@@ -244,7 +422,7 @@ class Game{
                         }
                     }
                 }
-                
+
                 i++;
             }
 
@@ -419,11 +597,14 @@ int main(){
                 game.solveGameIO();
             }
         } else if (inputMethod == "2"){
-            
+            game.inputIO();
+            game.printGameVar();
+            game.solveGameIO();
         } else if (inputMethod == "3"){
             break;
         } else{
             cout << "Invalid input. Please input the number.\n" << endl;
+            game.printGameVar();
         }
     }
 

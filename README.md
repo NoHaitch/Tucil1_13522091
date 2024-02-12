@@ -10,6 +10,9 @@
     <h3> Cyberpunk 2077 Breach Protocol Solver</h3>
     <h4> Using Brute Force Algorithm</h4>
     <br/>
+   <img src="https://github.com/NoHaitch/Tucil1_13522091/blob/main/doc/logo.png"/>
+   <br/>
+   <br/>
     <a href="#">Report Bug</a>
     ·
     <a href="#">Request Feature</a>
@@ -87,10 +90,21 @@ You can explore more on this link ...
 <!-- GETTING STARTED -->
 ## Getting Started
 
+There are two ways of using this program.
+1. Using python - flask GUI (run app.py)
+2. Command Line Interface (makefile)
+
 ### Prerequisites
 
 Project dependencies  
 example :  
+
+* Python flask
+  ```sh
+  # in Linux
+  sudo apt install python
+  pip install flask
+  ```
 
 * Make 
   ```sh
@@ -106,9 +120,17 @@ example :
    ```sh
    git clone https://github.com/NoHaitch/Tucil1_13522091
    ```
-2. Run the program
+2. Build the program
    ```sh
-   make all
+   make build
+   ```
+3. Run flask app or run the program
+   ```sh
+   # run flask app
+   python src/app.py
+
+   # run program in terminal
+   bin/main
    ```
 
 
@@ -121,7 +143,7 @@ Using Makefile commands:
 
 `make run` : run the compiled program  
 `make build` : build source to binary in bin/main  
-`make clean` : clean all file in bin
+`make clean` : clean all file in bin  
 `make all` : clean build and run the program  
 
 
@@ -169,6 +191,7 @@ The program saves the result of solving the minigame to a file in the test direc
 
 Example: test/output.txt
 
+NOTE: Using the GUI automaticly saves the file to output.txt without prompt  
 
 
 

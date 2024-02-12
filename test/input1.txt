@@ -1,0 +1,7 @@
+===== INPUT TRHOUGH CLI (KEYBOARD) =====
+Buffer Size: 5
+Matrix Size: 4 6
+Token Amount: 5
+Token: HA 99 YM LX ZT
+Sequance Amount: 4
+Max Sequance Length: 6  

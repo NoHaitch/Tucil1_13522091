@@ -1,0 +1,7 @@
+===== INPUT TRHOUGH CLI (KEYBOARD) =====
+Buffer Size: 7
+Matrix Size: 4 4
+Token Amount: 4
+Token: YY AA PP OO
+Sequance Amount: 3
+Max Sequance Length: 4  

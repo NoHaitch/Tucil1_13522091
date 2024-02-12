@@ -97,7 +97,6 @@ There are two ways of using this program.
 ### Prerequisites
 
 Project dependencies  
-example :  
 
 * Python flask
   ```sh
@@ -122,7 +121,11 @@ example :
    ```
 2. Build the program
    ```sh
+   # in Linuxe
    make build
+
+   # in windows
+   g++ src/main.cpp -o bin/main.exe
    ```
 3. Run flask app or run the program
    ```sh

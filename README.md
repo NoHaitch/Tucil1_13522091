@@ -125,12 +125,13 @@ Project dependencies
    make build
 
    # in windows
-   g++ src/main.cpp -o bin/main.exe
+   g++ src/main.cpp -o bin/main
    ```
 3. Run flask app or run the program
    ```sh
    # run flask app
-   python src/app.py
+   cd src
+   python app.py
 
    # run program in terminal
    bin/main

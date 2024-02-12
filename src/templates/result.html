@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link href="./output.css" rel="stylesheet" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+      />
+      <link
+        rel="stylesheet"
+        href="{{url_for('static',filename='dist/css/output.css')}}"
+      />
+      <title>Hacking Result</title>
+    </head>
+  </head>
+  <body>
+    <section
+      id="modal"
+      class="overflow-x-hidden absolute w-screen min-h-screen top-0 left-0 flex items-center justify-center item"
+    >
+      <div
+        class="absolute w-full h-full top-0 left-0 bg-slate-800 opacity-80 z-[2]"
+      ></div>
+      <div
+        class="m-5 flex flex-col z-[3] min-w-[50%] min-h-[70%] bg-slate-800 items-center py-3 px-5 rounded-xl border-secondary border-2"
+      >
+        <h1 class="text-font-1 text-3xl">RESULT</h1>
+        <div class="">
+          <div
+            class="flex flex-col text-white text-xl w-full p-5 text-center items-center justify-center"
+          >
+            <p class="">
+              Time taken : <span class="text-secondary">{{ time }} ms</span>
+            </p>
+            <p class="">
+              Max Points: <span class="text-secondary">{{ max_points }}</span>
+            </p>
+            <p class="text-secondary">{{ buffer }}</p>
+            <div class="flex flex-row">
+              <div class="">
+                <h1>Matrix</h1>
+                <table class="border border-secondary rounded-xl m-4">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      {% for j in range(matrix[0]|length) %}
+                      <th class="text-font-1 p-3 opacity-80">{{ j + 1 }}</th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for i in range(matrix|length) %}
+                    <tr>
+                      <th class="text-font-1 p-3 opacity-80">{{ i + 1 }}</th>
+                      {% for j in range(matrix[i]|length) %}
+                      <td class="p-3">
+                        {% if (i + 1, j + 1) in matrixPath %}
+                        <span class="bg-white text-red-500"
+                          >{{ matrix[i][j] }}</span
+                        >
+                        {% else %} {{ matrix[i][j] }} {% endif %}
+                      </td>
+                      {% endfor %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="">
+                <h1>Paths</h1>
+                <table class="border border-secondary rounded-xl m-4">
+                  <tbody>
+                    <tr>
+                      {% for i in range(matrixPath|length) %}
+                      <td class="p-3 text-font-1">
+                        {{ matrixPath[i][0] }}, {{ matrixPath[i][1] }}
+                      </td>
+                      {% endfor %}
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h1>Sequence</h1>
+                <table class="border border-secondary rounded-xl m-4">
+                  <tbody>
+                    {% for i in range(seq|length) %}
+                    <tr>
+                      {% for j in range(seq[i]|length) %} {% if j == 0 %}
+                      <td class="p-3 font-font-1">
+                        Reward :
+                        <span class="text-font-1">{{ seq[i][j] }}</span>
+                      </td>
+                      {% else %}
+                      <td class="p-3 text-secondary">{{ seq[i][j] }}</td>
+                      {% endif %} {% endfor %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="/">
+          <button
+            class="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-xl font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-font-1 to-secondary group-hover:from-font-1 group-hover:to-secondary hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800"
+          >
+            <span
+              class="relative px-7 py-3 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0"
+            >
+              Continue
+            </span>
+          </button>
+        </a>
+      </div>
+    </section>
+  </body>
+</html>

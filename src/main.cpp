@@ -11,7 +11,7 @@
 #include <algorithm>
 
 using namespace std;
-using namespace std::chrono;
+using namespace chrono;
 
 class Game{
     public:
@@ -25,7 +25,7 @@ class Game{
         vector<string> paths;
         vector<vector<vector<int>>> matrixPaths;
         vector<int> seqLen;
-        vector<int> prize;
+        vector<int> rewards;
 
     Game() : bufferSize(0), width(0), height(0), seqAmount(0) {}
 
@@ -50,7 +50,7 @@ class Game{
             // Print sequences
             cout << "> sequences: " << endl;
             for (int i = 0; i < seqAmount; ++i) {
-                cout <<"   prize: " << prize[i] << ", seq: ";
+                cout <<"   reward: " << rewards[i] << ", seq: ";
                 for(int j = 0; j < seq[i].size()-1; j += 2){
                     cout << seq[i][j] << seq[i][j+1] << " ";
                 } cout << endl;
@@ -60,11 +60,12 @@ class Game{
             cout << endl;
         }    
 
-        int solveGame(int *resPoint, string *resPath, vector<vector<int>> *resMatrixPath){
+        bool solveGame(int *resPoint, string *resPath, vector<vector<int>> *resMatrixPath){ 
             generatePaths();
 
+
             if(paths.empty()){
-                return 0;
+                return 1;
             }
 
             int maxPoints = 0;
@@ -105,11 +106,10 @@ class Game{
 
         void solveGameIO(){
             auto start = high_resolution_clock::now();
-
             int resPoint;
             string resPath;
             vector<vector<int>> resMatrixPath;
-            if(solveGame(&resPoint, &resPath, &resMatrixPath) == -1){
+            if(solveGame(&resPoint, &resPath, &resMatrixPath)){
                 cout << "Solving failed" << endl;
                 return;
             } 
@@ -147,9 +147,9 @@ class Game{
                 cin >> input;
                 cout << "\033[0m";
                 if(input == "y" || input == "Y" || input == "yes" || input == "Yes"){
-                    std::stringstream outputStream;
-                    std::streambuf* originalCoutBuffer = std::cout.rdbuf(); 
-                    std::cout.rdbuf(outputStream.rdbuf());
+                    stringstream outputStream;
+                    streambuf* originalCoutBuffer = cout.rdbuf(); 
+                    cout.rdbuf(outputStream.rdbuf());
 
                     cout << resPoint << endl;
                     if(resPath == "No Solution"){
@@ -163,17 +163,41 @@ class Game{
                     if(resMatrixPath.empty()){
                         cout << "No Solution" << endl;
                     } else{
-                        cout << endl;
                         for(auto& coordinats: resMatrixPath){
                             cout << "" << (coordinats[0] + 1) << ", "<< (coordinats[1] + 1) << endl;
-                        } cout << endl;
+                        }
                     }
                     
-                    cout << "Time taken: " << int(duration.count()/1000) << " ms\n" << endl;
+                    cout << "Time taken: " << int(duration.count()/1000) << " ms";
 
-                    std::cout.rdbuf(originalCoutBuffer); 
+                    cout.rdbuf(originalCoutBuffer); 
 
                     saveOutput(outputStream.str());
+
+                    // DATA FOR GUI
+                    stringstream outputStreamGUI;
+                    streambuf* originalCoutBufferGUI = cout.rdbuf(); 
+                    cout.rdbuf(outputStreamGUI.rdbuf());
+                    
+                    cout << width << " " << height << endl;
+                    for (int i = 0; i < height; ++i) {
+                        for (int j = 0; j < width; ++j) {
+                            cout << matrix[i][j] << " ";
+                        }
+                        cout << endl;
+                    }
+
+                    for (int i = 0; i < seqAmount; ++i) {
+                        cout << rewards[i] << " ";
+                        for(int j = 0; j < seq[i].size()-1; j += 2){
+                            cout << seq[i][j] << seq[i][j+1] << " ";
+                        } cout << endl;
+                    }
+
+                    cout.rdbuf(originalCoutBufferGUI); 
+
+                    saveOutputGUI(outputStreamGUI.str());
+
                     break;
                 } else if(input == "n" || input == "N" || input == "no" || input == "No"){
                     break;
@@ -308,11 +332,19 @@ class Game{
             string baseFilename = "output";
             string filename = "../test/" + baseFilename + ".txt";
 
-            std::ofstream file(filename);
+            ofstream file(filename);
             file << outputStream;
             file.close();
 
-            std::cout << "Solution saved to " << filename << std::endl;
+            cout << "Solution saved to " << filename << endl;
+        }
+
+        void saveOutputGUI(string outputStream) {
+            string filename = "../bin/temp";
+
+            ofstream file(filename);
+            file << outputStream;
+            file.close();
         }
 
         void generatePaths(){
@@ -354,7 +386,7 @@ class Game{
 
             } else{
                 // move horizontal
-                for(int x = 0; x < height; x++){
+                for(int x = 0; x < width; x++){
                     bool seen = false;
                     for(auto& coordinats : seenPath){
                         if(coordinats[0] == x && coordinats[1] == lastSignificantIndex){
@@ -366,7 +398,8 @@ class Game{
                         continue;
                     }
                     seenPath.push_back({x, lastSignificantIndex});
-                    genPaths(currBuffer + 1, x, currPath + matrix[lastSignificantIndex][x], seenPath);
+                    string temp = currPath + matrix[lastSignificantIndex][x];
+                    genPaths(currBuffer + 1, x, temp, seenPath);
                     seenPath.pop_back();
                 }
             }
@@ -375,7 +408,7 @@ class Game{
         void genSeq(vector<string> uniqueToken, int maxSeqSize){
             for(int i = 0; i < seqAmount; i++){
                 seqLen.push_back((rand() % (maxSeqSize)) + 1);
-                prize.push_back((rand() % (40)) + 10);
+                rewards.push_back((rand() % (40)) + 10);
                 
                 string temp;
                 for(int j = 0; j < seqLen[i]; j++){
@@ -417,7 +450,7 @@ class Game{
                         }
 
                         if(k == seqLen[j]){
-                            points += prize[j];
+                            points += rewards[j];
                             seqUsed[j] = true;
                         }
                     }
@@ -594,7 +627,7 @@ bool readFile(Game& game) {
                         cerr << "Error parsing reward for sequence " << seqIndex << endl;
                         return 0;
                     }
-                    game.prize.push_back(reward);
+                    game.rewards.push_back(reward);
 
                     char remainingChar;
                     if (ss >> remainingChar) {
@@ -625,14 +658,14 @@ bool readFile(Game& game) {
     // Get max points possible
     game.maxPointsPossible = 0;
     for(int i = 0; i < game.seqAmount; i++){
-        game.maxPointsPossible += game.prize[i];
+        game.maxPointsPossible += game.rewards[i];
     }
 
     return 1;
 
 }
 
-bool readGameFromFile(const std::string& filename, Game& game) {
+bool readGameFromFile(const string& filename, Game& game) {
     // Check file extension
     if (filename.substr(filename.find_last_of('.') + 1) != "txt") {
         cerr << "Error: Only .txt files are supported." << endl;
@@ -665,28 +698,28 @@ bool readGameFromFile(const std::string& filename, Game& game) {
         else if (lineNumber == 2) {
             int w, h;
             if (!(ss >> w >> h)) {
-                std::cerr << "Error parsing matrix dimensions on line " << lineNumber << endl;
+                cerr << "Error parsing matrix dimensions on line " << lineNumber << endl;
                 return false;
             }
             game.width = w;
             game.height = h;
-            game.matrix.resize(h, std::vector<std::string>(w));
+            game.matrix.resize(h, vector<string>(w));
         }
 
         // Parse matrix elements
         else if (lineNumber <= game.height + 2) {
             int row = lineNumber - 3;
             int col = 0;
-            std::string token;
+            string token;
             while (ss >> token) {
                 if (col >= game.width) {
-                    std::cerr << "Error: Too many elements in row " << row << endl;
+                    cerr << "Error: Too many elements in row " << row << endl;
                     return false;
                 }
                 game.matrix[row][col++] = token;
             }
             if (col != game.width) {
-                std::cerr << "Error: Missing elements in row " << row << endl;
+                cerr << "Error: Missing elements in row " << row << endl;
                 return false;
             }
         }
@@ -695,7 +728,7 @@ bool readGameFromFile(const std::string& filename, Game& game) {
         else if (lineNumber == game.height + 3) {
             int seqNum;
             if (!(ss >> seqNum)) {
-                std::cerr << "Error parsing number_of_sequences on line " << lineNumber << endl;
+                cerr << "Error parsing number_of_sequences on line " << lineNumber << endl;
                 return false;
             }
             game.seqAmount = seqNum;
@@ -711,15 +744,15 @@ bool readGameFromFile(const std::string& filename, Game& game) {
             } else {
                 int reward;
                 if (!(ss >> reward)) {
-                    std::cerr << "Error parsing reward for sequence " << seqIndex << endl;
+                    cerr << "Error parsing reward for sequence " << seqIndex << endl;
                     return false;
                 }
-                game.prize.push_back(reward);
+                game.rewards.push_back(reward);
             }
         }
 
         else {
-            std::cerr << "Error: Unexpected line content on line " << lineNumber << endl;
+            cerr << "Error: Unexpected line content on line " << lineNumber << endl;
             return false;
         }
 

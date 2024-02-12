@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./output.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{url_for('static',filename='dist/css/output.css')}}"
+    />
+    <title>Breach Protocol Cyberpunk 2077</title>
+  </head>
+
+  <body class="bg-midnight">
+    <section class="flex justify-center w-screen h-screen px-5 py-5">
+      <main class="flex flex-col items-center w-[85%] min-w-5 m-5">
+        <div class="flex flex-col m-5 text-center">
+          <h1 class="text-5xl underline text-font-1 decoration-secondary">
+            Cyberpunk <span class="italic">2077</span>
+          </h1>
+          <h2 class="text-3xl font-bold text-font-1">Breach Protocol Solver</h2>
+        </div>
+        <h3 class="text-secondary">
+          Input data using a .txt file or a randomize game
+        </h3>
+        <form
+          action="/"
+          method="POST"
+          enctype="multipart/form-data"
+          class="flex flex-col items-center w-full"
+        >
+          <div class="grid grid-cols-2 w-[80%] m-4 gap-7">
+            <div class="">
+              <label
+                class="block mb-2 text-lg font-medium text-secondary"
+                for="file_input"
+                >Upload .txt file</label
+              >
+              <input
+                class="block w-full text-lg border rounded-lg cursor-pointer text-gray-400 focus:outline-none bg-gray-700 border-gray-600 placeholder-gray-400"
+                type="file"
+                name="file_input"
+                accept=".txt"
+              />
+            </div>
+            <div class="">
+              <div class="flex flex-col">
+                <div class="mb-2 p-2">
+                  <label for="base-input" class="text-xl text-secondary"
+                    >Buffer Size</label
+                  >
+                  <input
+                    type="number"
+                    name="bufferSize"
+                    class="border text-lg rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus::ring-blue-500 focus:border-blue-500"
+                    placeholder="5"
+                  />
+                </div>
+                <div class="flex flex-row space-x-3 mb-2 p-2">
+                  <div class="">
+                    <label for="base-input" class="text-xl text-secondary"
+                      >Matrix Width</label
+                    >
+                    <input
+                      type="number"
+                      name="width"
+                      class="border text-lg rounded-lg block w-[100px] p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus::ring-blue-500 focus:border-blue-500"
+                      placeholder="4"
+                    />
+                  </div>
+                  <div class="">
+                    <label for="base-input" class="text-xl text-secondary"
+                      >Matrix Height</label
+                    >
+                    <input
+                      type="number"
+                      name="height"
+                      class="border text-lg rounded-lg block w-[100px] p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus::ring-blue-500 focus:border-blue-500"
+                      placeholder="6"
+                    />
+                  </div>
+                </div>
+                <div class="mb-2 p-2">
+                  <label for="base-input" class="text-xl text-secondary"
+                    >Unique Token Amount</label
+                  >
+                  <input
+                    type="number"
+                    name="tokenAmount"
+                    class="border text-lg rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus::ring-blue-500 focus:border-blue-500"
+                    placeholder="4"
+                  />
+                </div>
+                <div class="mb-4 p-2">
+                  <label for="default-input" class="text-lg text-secondary"
+                    >Unique Token</label
+                  >
+                  <input
+                    type="text"
+                    id="default-input"
+                    name="uniqueToken"
+                    class="border text-xl rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="7A AK BD 4C"
+                  />
+                </div>
+                <div class="mb-2 p-2">
+                  <label for="base-input" class="text-xl text-secondary"
+                    >Sequance Amount</label
+                  >
+                  <input
+                    type="number"
+                    name="seqAmount"
+                    class="border text-lg rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus::ring-blue-500 focus:border-blue-500"
+                    placeholder="3"
+                  />
+                </div>
+                <div class="mb-2 p-2">
+                  <label for="base-input" class="text-xl text-secondary"
+                    >Maximum Sequance Length</label
+                  >
+                  <input
+                    type="number"
+                    name="maxSeqSize"
+                    class="border text-lg rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus::ring-blue-500 focus:border-blue-500"
+                    placeholder="3"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="text-font-1 bg-gray-800 border-secondary border-2 opacity-90 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-xl px-10 py-2.5 me-2 mb-2"
+          >
+            Solve
+          </button>
+        </form>
+      </main>
+    </section>
+    <section class="text-white bg-red-300"></section>
+  </body>
+</html>

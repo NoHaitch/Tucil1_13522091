@@ -1,6 +1,8 @@
-126
-BB BB WX 
-1, 1
-1, 3
+78
+AW CD BF AA BF 
+2, 1
+2, 3
 4, 3
-Time taken: 4 ms
+4, 2
+2, 2
+Time taken: 195 ms

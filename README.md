@@ -94,6 +94,8 @@ There are two ways of using this program.
 1. Using python - flask GUI (run app.py)
 2. Command Line Interface (makefile)
 
+NOTE: GUI currently only works in windows
+
 ### Prerequisites
 
 Project dependencies  
@@ -115,16 +117,13 @@ Project dependencies
 
 ### Installation
 
+For Windows:
 1. Clone the repo
    ```sh
    git clone https://github.com/NoHaitch/Tucil1_13522091
    ```
 2. Build the program
    ```sh
-   # in Linuxe
-   make build
-
-   # in windows
    g++ src/main.cpp -o bin/main
    ```
 3. Run flask app or run the program
@@ -134,7 +133,27 @@ Project dependencies
    python app.py
 
    # run program in terminal
-   bin/main
+   cd bin
+   main
+   ```
+
+For Linux:
+1. Clone the repo
+   ```sh
+   git clone https://github.com/NoHaitch/Tucil1_13522091
+   ```
+2. IMPORTANT: Fix Filesystem path  
+   in main.cpp  
+   find all `../` and remove it  
+     
+3. Build the program
+   ```sh
+   make build
+   ```
+4. Run the program
+   ```sh
+   # run program in terminal
+   make run
    ```
 
 

@@ -94,7 +94,7 @@ There are two ways of using this program.
 1. Using python - flask GUI (run app.py)
 2. Command Line Interface (makefile)
 
-NOTE: GUI currently only works in windows
+NOTE: GUI currently only works in windows and file upload through GUI is not handled
 
 ### Prerequisites
 

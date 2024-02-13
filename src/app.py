@@ -37,6 +37,10 @@ def index():
                 uniqueToken = request.form["uniqueToken"]
                 seqAmount = request.form["seqAmount"]
                 maxSeqSize = request.form["maxSeqSize"]
+                if(bufferSize and width and height and tokenAmount and uniqueToken and seqAmount and maxSeqSize):
+                    pass
+                else:
+                    return render_template("index.html")
         else:
             bufferSize = request.form["bufferSize"]
             width = request.form["width"]
@@ -45,6 +49,10 @@ def index():
             uniqueToken = request.form["uniqueToken"]
             seqAmount = request.form["seqAmount"]
             maxSeqSize = request.form["maxSeqSize"]
+            if(bufferSize and width and height and tokenAmount and uniqueToken and seqAmount and maxSeqSize):
+                pass
+            else:
+                return render_template("index.html")
 
         if file_uploaded:
             command = ["../bin/main.exe"]
@@ -59,6 +67,10 @@ def index():
 
             output, err = process.communicate()
             max_points, buffer, matrixPath, time, width, height, matrix, seq = parse_result("../test/output.txt")
+
+            if(time == -1):
+                return render_template("index.html")    
+            
 
             return render_template("result.html", 
                          buffer=buffer, 
@@ -84,6 +96,10 @@ def index():
             output, err = process.communicate()
             result = output.decode()
             max_points, buffer, matrixPath, time, width, height, matrix, seq = parse_result("../test/output.txt")
+
+            if(time == -1):
+                return render_template("index.html")    
+            
 
             return render_template("result.html", 
                          buffer=buffer, 

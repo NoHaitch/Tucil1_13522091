@@ -117,7 +117,7 @@ Project dependencies
 
 ### Installation
 
-For Windows:
+#### For Windows:
 1. Clone the repo
    ```sh
    git clone https://github.com/NoHaitch/Tucil1_13522091
@@ -137,7 +137,7 @@ For Windows:
    main
    ```
 
-For Linux:
+#### For Linux:
 1. Clone the repo
    ```sh
    git clone https://github.com/NoHaitch/Tucil1_13522091
